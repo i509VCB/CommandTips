@@ -83,7 +83,7 @@ public class CommandTipsClient implements ClientModInitializer {
 					UUID entityUUID = entity.getUuid();
 					EntityType<?> entityType = entity.getType();
 					this.setCachedEntity(entityUUID, entityType);
-					client.player.addChatMessage(
+					client.player.addMessage(
 						new TranslatableText("commandtips.cmd.cached", new TranslatableText(entityType.getTranslationKey()), entityUUID.toString()).formatted(Formatting.GRAY), false
 					);
 				}
