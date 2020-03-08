@@ -3,6 +3,7 @@ package me.i509.fabric.commandtips.mixin.screen;
 import java.util.List;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
+import me.i509.fabric.commandtips.suggestion.ColoredSuggestion;
 import me.i509.fabric.commandtips.suggestion.ItemRenderableSuggestion;
 import me.i509.fabric.commandtips.suggestion.PlayerEntrySuggestion;
 import net.minecraft.client.MinecraftClient;
@@ -16,11 +17,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SignItem;
+import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -29,8 +33,9 @@ public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 	@Shadow private Rect2i area;
 	@Shadow @Final private Suggestions suggestions;
 	@SuppressWarnings("ShadowTarget") @Shadow private CommandSuggestor field_21615;
-
 	@Shadow private int inWindowIndex;
+
+	private Formatting ctp_cacheColor;
 
 	@Inject(at = @At("TAIL"), method = "render(II)V", locals = LocalCapture.CAPTURE_FAILEXCEPTION)
 	private void commandTips_renderItems(int mouseX, int mouseY, CallbackInfo ci, int i) {
@@ -76,5 +81,26 @@ public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 				}
 			}
 		}
+	}
+	// Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I
+	@Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/suggestion/Suggestion;getText()Ljava/lang/String;"), method = "render")
+	private String ctp_cacheTextColor(Suggestion suggestion) {
+		if (suggestion instanceof ColoredSuggestion) {
+			this.ctp_cacheColor = ((ColoredSuggestion) suggestion).getFormatting();
+		} else {
+			this.ctp_cacheColor = null;
+		}
+
+		return suggestion.getText();
+	}
+
+	// Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I
+	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I"), method = "render", index = 3)
+	private int ctp_setTextColor(int color) {
+		if (this.ctp_cacheColor != null && color == -5592406) {
+			return this.ctp_cacheColor.getColorValue();
+		}
+
+		return color;
 	}
 }

@@ -21,6 +21,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
@@ -29,6 +30,7 @@ public class CommandTipsClient implements ClientModInitializer {
 	private static final String MODID = "commandtips";
 	private boolean previousKeyState = false;
 	private CommandTipsConfig config = new CommandTipsConfig();
+	@Nullable private String cachedCommand;
 
 	private static Identifier id(String path) {
 		return new Identifier(CommandTipsClient.MODID, path);
@@ -107,5 +109,13 @@ public class CommandTipsClient implements ClientModInitializer {
 
 	public CommandTipsConfig getConfig() {
 		return config;
+	}
+
+	public void setCachedCommand(String text) {
+		this.cachedCommand = text;
+	}
+
+	public String getCachedCommand() {
+		return this.cachedCommand;
 	}
 }

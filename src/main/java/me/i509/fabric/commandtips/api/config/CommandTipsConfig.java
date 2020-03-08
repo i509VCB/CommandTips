@@ -8,4 +8,8 @@ public class CommandTipsConfig {
 	public boolean use1_15CommandParserFix = true;
 
 	public boolean targetItemEntity = true;
+
+	public boolean cacheChatMessages = true;
+
+	public boolean cacheCommandMessages = true;
 }

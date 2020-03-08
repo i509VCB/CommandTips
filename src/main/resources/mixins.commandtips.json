@@ -9,7 +9,9 @@
     "command.argument.EntityArgumentTypeMixin_Suggestions",
     "command.argument.ItemStackArgumentTypeMixin_Suggestions",
     "screen.AbstractCommandBlockScreenMixin_Core",
+    "screen.ScreenMixin_Core",
     "screen.ChatScreenMixin_Core",
+    "screen.SleepingChatScreenMixin_Core",
     "screen.CommandSuggestor_SuggestionWindowMixin_Core",
     "screen.CommandSuggestorMixin_Core"
   ],

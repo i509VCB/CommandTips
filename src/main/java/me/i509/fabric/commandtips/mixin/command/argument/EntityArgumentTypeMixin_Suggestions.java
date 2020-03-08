@@ -28,10 +28,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EntityArgumentType.class)
-public abstract class EntityArgumentTypeMixin_Suggestions implements ArgumentType<EntitySelector> {
+public abstract class EntityArgumentTypeMixin_Suggestions {
 	@Shadow @Final private boolean playersOnly;
 
-	@Inject(at = @At(value = "RETURN", ordinal = 0), method = "listSuggestions", cancellable = true)
+	@Inject(at = @At(value = "RETURN"), method = "listSuggestions", cancellable = true)
 	private void commandTips_addCachedSuggestion(CommandContext<CommandSource> context, SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
 		if (context.getSource() instanceof ServerCommandSource) {
 			return;
@@ -44,9 +44,12 @@ public abstract class EntityArgumentTypeMixin_Suggestions implements ArgumentTyp
 			List<Suggestion> oldSuggestionList = suggestions.getList();
 			List<Suggestion> suggestionList = new ArrayList<>();
 
+			ColoredSuggestion colorSuggestion = null;
+
 			if (client.getCachedEntityType().isPresent() && client.getCachedEntityUUID().isPresent()) {
-				if (this.playersOnly && client.getCachedEntityType().get().equals(EntityType.PLAYER)) {
-					suggestionList.add(0, new ColoredSuggestion(range, client.getCachedEntityUUID().get().toString(), client.getConfig().cachedEntitySelectorColor));
+				if (!this.playersOnly || client.getCachedEntityType().get().equals(EntityType.PLAYER)) {
+					colorSuggestion = new ColoredSuggestion(range, client.getCachedEntityUUID().get().toString(), client.getConfig().cachedEntitySelectorColor);
+					suggestionList.add(colorSuggestion);
 				}
 			}
 
@@ -54,12 +57,14 @@ public abstract class EntityArgumentTypeMixin_Suggestions implements ArgumentTyp
 
 			for (Suggestion suggestion : oldSuggestionList) {
 				Collection<PlayerListEntry> players = MinecraftClient.getInstance().getNetworkHandler().getPlayerList();
+
 				for (PlayerListEntry player : players) {
 					if (player.getProfile().getName().equals(suggestion.getText())) {
 						suggestionList.add(new PlayerEntrySuggestion(range, suggestion.getText(), player, player.getProfile(), player.getSkinTexture()));
-					} else {
-						suggestionList.add(suggestion);
+						break;
 					}
+
+					suggestionList.add(suggestion);
 				}
 			}
 
