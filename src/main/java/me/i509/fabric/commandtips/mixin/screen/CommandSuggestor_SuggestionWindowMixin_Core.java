@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.Rect2i;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -37,11 +38,11 @@ public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 
 	private Formatting ctp_cacheColor;
 
-	@Inject(at = @At("TAIL"), method = "render(II)V", locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-	private void commandTips_renderItems(int mouseX, int mouseY, CallbackInfo ci, int i) {
+	@Inject(at = @At("TAIL"), method = "render(Lnet/minecraft/client/util/math/MatrixStack;II)V", locals = LocalCapture.CAPTURE_FAILEXCEPTION)
+	private void commandTips_renderItems(MatrixStack matrices, int mouseX, int mouseY, CallbackInfo ci, int suggestionListSize) {
 		List<Suggestion> suggestionList = this.suggestions.getList();
 
-		for(int m = 0; m < i; ++m) {
+		for(int m = 0; m < suggestionListSize; ++m) {
 			Suggestion suggestion = suggestionList.get(m + this.inWindowIndex);
 
 			if (suggestion instanceof ItemRenderableSuggestion) {
@@ -71,12 +72,12 @@ public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 				// http://assets.mojang.com/SkinTemplates/4px_reference.png
 				// Reference skin
 				MinecraftClient.getInstance().getTextureManager().bindTexture(playerSuggestion.getSkinTexture());
-				DrawableHelper.blit(this.area.getX() - 16, this.area.getY() + (12 * m) + 2, 8.0F, 8.0F, 8, 8, 64, 64);
+				DrawableHelper.drawTexture(matrices, this.area.getX() - 16, this.area.getY() + (12 * m) + 2, 8.0F, 8.0F, 8, 8, 64, 64);
 				// We can only do so much if the player instance can't actually be found, so we do our best to get the visible skin parts.
 				PlayerEntity playerEntity = MinecraftClient.getInstance().world.getPlayerByUuid(playerSuggestion.getProfile().getId());
 				if (playerEntity != null) {
 					if (playerEntity.isPartVisible(PlayerModelPart.HAT)) {
-						DrawableHelper.blit(this.area.getX() - 16, this.area.getY() + (12 * m) + 2, 40.0F, 8.0F, 8, 8, 64, 64);
+						DrawableHelper.drawTexture(matrices, this.area.getX() - 16, this.area.getY() + (12 * m) + 2, 40.0F, 8.0F, 8, 8, 64, 64);
 					}
 				}
 			}
@@ -95,7 +96,7 @@ public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 	}
 
 	// Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I
-	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I"), method = "render", index = 3)
+	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Lnet/minecraft/client/util/math/MatrixStack;Ljava/lang/String;FFI)I"), method = "render", index = 4)
 	private int ctp_setTextColor(int color) {
 		if (this.ctp_cacheColor != null && color == -5592406) {
 			return this.ctp_cacheColor.getColorValue();

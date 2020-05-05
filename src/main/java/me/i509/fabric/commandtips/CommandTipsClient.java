@@ -1,9 +1,5 @@
 package me.i509.fabric.commandtips;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import me.i509.fabric.commandtips.api.config.CommandTipsConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -12,7 +8,6 @@ import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
 import net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry;
 import net.fabricmc.fabric.api.event.client.ClientTickCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.PlayerSkinProvider;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -23,6 +18,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Environment(EnvType.CLIENT)
 public class CommandTipsClient implements ClientModInitializer {
@@ -48,7 +48,6 @@ public class CommandTipsClient implements ClientModInitializer {
 
 	private boolean enabled = false;
 	private CommandTipsNetworking networking = new CommandTipsNetworking();
-	private SuggestionDispatcher suggestionDispatcher = new SuggestionDispatcher();
 
 	public static CommandTipsClient getInstance() {
 		return CommandTipsClient.instance;
@@ -56,10 +55,6 @@ public class CommandTipsClient implements ClientModInitializer {
 
 	public CommandTipsNetworking getNetworking() {
 		return this.networking;
-	}
-
-	public SuggestionDispatcher getSuggestionDispatcher() {
-		return this.suggestionDispatcher;
 	}
 
 	public Optional<UUID> getCachedEntityUUID() {
@@ -85,9 +80,7 @@ public class CommandTipsClient implements ClientModInitializer {
 					UUID entityUUID = entity.getUuid();
 					EntityType<?> entityType = entity.getType();
 					this.setCachedEntity(entityUUID, entityType);
-					client.player.addMessage(
-						new TranslatableText("commandtips.cmd.cached", new TranslatableText(entityType.getTranslationKey()), entityUUID.toString()).formatted(Formatting.GRAY), false
-					);
+					client.player.sendMessage(new TranslatableText("commandtips.cmd.cached", new TranslatableText(entityType.getTranslationKey()), entityUUID.toString()).formatted(Formatting.GRAY), false);
 				}
 			}
 		} else if (!CommandTipsClient.CACHE_ENTITY.isPressed() && previousKeyState) {

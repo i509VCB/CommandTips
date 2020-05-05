@@ -45,7 +45,8 @@ public abstract class EntityArgumentTypeMixin_Suggestions {
 			List<Suggestion> suggestionList = new ArrayList<>();
 
 			ColoredSuggestion colorSuggestion = null;
-
+			// TODO: Check if a UUID can actually be displayed with the current suggestions or not, if not then don't add it.
+			// TODO: Add a tooltip so we can display the entity type being stored.
 			if (client.getCachedEntityType().isPresent() && client.getCachedEntityUUID().isPresent()) {
 				if (!this.playersOnly || client.getCachedEntityType().get().equals(EntityType.PLAYER)) {
 					colorSuggestion = new ColoredSuggestion(range, client.getCachedEntityUUID().get().toString(), client.getConfig().cachedEntitySelectorColor);

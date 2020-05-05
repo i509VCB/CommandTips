@@ -6,7 +6,14 @@
   "name": "Command Tips",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
-    "Me!"
+    {
+      "name": "i509VCB",
+      "minecraft": "765e5d33-c991-454f-8775-b6a7a394c097",
+      "contact": {
+        "sources": "https://github.com/i509VCB/",
+        "discord": "i509VCB#9778"
+      }
+    }
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
