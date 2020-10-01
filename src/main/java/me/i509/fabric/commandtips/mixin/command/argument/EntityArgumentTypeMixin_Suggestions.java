@@ -31,20 +31,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EntityArgumentTypeMixin_Suggestions {
 	@Shadow @Final private boolean playersOnly;
 
-	@Inject(at = @At(value = "RETURN"), method = "listSuggestions", cancellable = true)
+	@Inject(at = @At(value = "RETURN"), method = "listSuggestions")
 	private void commandTips_addCachedSuggestion(CommandContext<CommandSource> context, SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
 		if (context.getSource() instanceof ServerCommandSource) {
 			return;
 		}
 
-		CompletableFuture<Suggestions> suggestionsFuture = cir.getReturnValue();
-		cir.setReturnValue(suggestionsFuture.thenApply(suggestions ->  {
-			CommandTipsClient client = CommandTipsClient.getInstance();
-			StringRange range = suggestions.getRange();
-			List<Suggestion> oldSuggestionList = suggestions.getList();
-			List<Suggestion> suggestionList = new ArrayList<>();
+		cir.getReturnValue().thenApply(suggestions ->  {
+			final CommandTipsClient client = CommandTipsClient.getInstance();
+			final StringRange range = suggestions.getRange();
+			final List<Suggestion> oldSuggestionList = suggestions.getList();
+			final List<Suggestion> suggestionList = new ArrayList<>();
 
 			ColoredSuggestion colorSuggestion = null;
+
 			// TODO: Check if a UUID can actually be displayed with the current suggestions or not, if not then don't add it.
 			// TODO: Add a tooltip so we can display the entity type being stored.
 			if (client.getCachedEntityType().isPresent() && client.getCachedEntityUUID().isPresent()) {
@@ -56,10 +56,10 @@ public abstract class EntityArgumentTypeMixin_Suggestions {
 
 			// Now display the face of the player next to each player on the list known to the client
 
-			for (Suggestion suggestion : oldSuggestionList) {
-				Collection<PlayerListEntry> players = MinecraftClient.getInstance().getNetworkHandler().getPlayerList();
+			for (final Suggestion suggestion : oldSuggestionList) {
+				final Collection<PlayerListEntry> players = MinecraftClient.getInstance().getNetworkHandler().getPlayerList();
 
-				for (PlayerListEntry player : players) {
+				for (final PlayerListEntry player : players) {
 					if (player.getProfile().getName().equals(suggestion.getText())) {
 						suggestionList.add(new PlayerEntrySuggestion(range, suggestion.getText(), player, player.getProfile(), player.getSkinTexture()));
 						break;
@@ -70,6 +70,6 @@ public abstract class EntityArgumentTypeMixin_Suggestions {
 			}
 
 			return new Suggestions(range, suggestionList);
-		}));
+		});
 	}
 }

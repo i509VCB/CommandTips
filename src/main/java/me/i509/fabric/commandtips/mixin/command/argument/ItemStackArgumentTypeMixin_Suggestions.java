@@ -28,8 +28,7 @@ public abstract class ItemStackArgumentTypeMixin_Suggestions {
 			return;
 		}
 
-		CompletableFuture<Suggestions> future = cir.getReturnValue();
-		cir.setReturnValue(future.thenApply(suggestions -> {
+		cir.getReturnValue().thenApply(suggestions -> {
 			List<Suggestion> modifiedSuggestions = new ArrayList<>();
 
 			for (Suggestion suggestion : suggestions.getList()) {
@@ -49,6 +48,6 @@ public abstract class ItemStackArgumentTypeMixin_Suggestions {
 			}
 
 			return new Suggestions(suggestions.getRange(), modifiedSuggestions);
-		}));
+		});
 	}
 }

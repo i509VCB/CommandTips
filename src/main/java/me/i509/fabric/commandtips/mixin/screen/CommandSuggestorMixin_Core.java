@@ -24,14 +24,26 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(CommandSuggestor.class)
 public abstract class CommandSuggestorMixin_Core implements CommandSuggestorBridge {
-	@Shadow @Final private MinecraftClient client;
-	@Shadow	@Final private Screen owner;
-	@Shadow @Final private TextFieldWidget textField;
-	@Shadow @Final private TextRenderer textRenderer;
-	@Shadow private CommandSuggestor.SuggestionWindow window;
-	@Shadow private ParseResults<CommandSource> parse;
-	@Shadow private CompletableFuture<Suggestions> pendingSuggestions;
-	@Shadow private List<String> messages;
+	@Shadow
+	@Final
+	private MinecraftClient client;
+	@Shadow
+	@Final
+	private Screen owner;
+	@Shadow
+	@Final
+	private TextFieldWidget textField;
+	@Shadow
+	@Final
+	private TextRenderer textRenderer;
+	@Shadow
+	private CommandSuggestor.SuggestionWindow window;
+	@Shadow
+	private ParseResults<CommandSource> parse;
+	@Shadow
+	private CompletableFuture<Suggestions> pendingSuggestions;
+	@Shadow
+	private List<String> messages;
 
 	// TODO
 	// Get the current argument type that the cursor is at, check if it's the last argument

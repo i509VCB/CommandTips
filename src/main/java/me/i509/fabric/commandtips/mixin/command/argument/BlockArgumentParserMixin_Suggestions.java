@@ -23,12 +23,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class BlockArgumentParserMixin_Suggestions implements ArgumentType<BlockStateArgument> {
 	@Inject(at = @At("TAIL"), method = "getSuggestions", cancellable = true)
 	private void commandTips_BlockPreviewSuggestion(SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
-		CompletableFuture<Suggestions> future = cir.getReturnValue();
-		cir.setReturnValue(future.thenApply(suggestions -> {
-			List<Suggestion> modifiedSuggestions = new ArrayList<>();
+		cir.getReturnValue().thenApply(suggestions -> {
+			final List<Suggestion> modifiedSuggestions = new ArrayList<>();
 
-			for (Suggestion suggestion : suggestions.getList()) {
-				Optional<Item> item = Registry.ITEM.getOrEmpty(Identifier.tryParse(suggestion.getText()));
+			for (final Suggestion suggestion : suggestions.getList()) {
+				final Optional<Item> item = Registry.ITEM.getOrEmpty(Identifier.tryParse(suggestion.getText()));
 
 				if (!item.isPresent()) {
 					modifiedSuggestions.add(suggestion);
@@ -44,6 +43,6 @@ public abstract class BlockArgumentParserMixin_Suggestions implements ArgumentTy
 			}
 
 			return new Suggestions(suggestions.getRange(), modifiedSuggestions);
-		}));
+		});
 	}
 }

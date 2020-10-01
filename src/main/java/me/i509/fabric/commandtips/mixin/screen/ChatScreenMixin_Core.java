@@ -1,22 +1,26 @@
 package me.i509.fabric.commandtips.mixin.screen;
 
-import me.i509.fabric.commandtips.CommandTipsClient;
 import me.i509.fabric.commandtips.bridge.ChatScreenBridge;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin_Core extends ScreenMixin_Core implements ChatScreenBridge {
-	@Shadow protected TextFieldWidget chatField;
+	@Shadow
+	protected TextFieldWidget chatField;
 
-	@Shadow private String originalChatText;
+	@Shadow
+	private String originalChatText;
+
+	@Unique
 	protected boolean ctp_shouldCache = true;
 
 	@Inject(at = @At("TAIL"), method = "init")

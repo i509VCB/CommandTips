@@ -19,7 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin_TargetedEntity {
-	@Shadow @Final private MinecraftClient client;
+	@Shadow
+	@Final
+	private MinecraftClient client;
 
 	@Inject(at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, ordinal = 2), method = "updateTargetedEntity(F)V", locals = LocalCapture.CAPTURE_FAILEXCEPTION)
 	private void commandTips_updateTargetEntity(
