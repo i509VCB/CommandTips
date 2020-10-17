@@ -1,24 +1,15 @@
 package me.i509.fabric.commandtips.mixin.screen;
 
 import java.util.List;
+
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
-import me.i509.fabric.commandtips.suggestion.ColoredSuggestion;
-import me.i509.fabric.commandtips.suggestion.ItemRenderableSuggestion;
-import me.i509.fabric.commandtips.suggestion.PlayerEntrySuggestion;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.screen.CommandSuggestor;
-import net.minecraft.client.render.entity.PlayerModelPart;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.util.Rect2i;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SignItem;
-import net.minecraft.util.Formatting;
+import me.i509.fabric.commandtips.api.render.SuggestionRenderer;
+import me.i509.fabric.commandtips.api.render.SuggestionRendererRegistry;
+import me.i509.fabric.commandtips.api.suggestion.ColorSuggestionData;
+import me.i509.fabric.commandtips.api.suggestion.SuggestionData;
+import me.i509.fabric.commandtips.api.suggestion.SuggestionTypes;
+import me.i509.fabric.commandtips.internal.SuggestionWithData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,29 +21,45 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import net.minecraft.client.gui.screen.CommandSuggestor;
+import net.minecraft.client.util.Rect2i;
+import net.minecraft.client.util.math.MatrixStack;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+@Environment(EnvType.CLIENT)
 @Mixin(value = CommandSuggestor.SuggestionWindow.class, priority = 1001)
-public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
+abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 	@Shadow
 	@Final
-	private Suggestions suggestions;
-	@SuppressWarnings("ShadowTarget")
-	@Shadow
-	private CommandSuggestor field_21615;
+	private List<Suggestion> field_25709;
 	@Shadow
 	private int inWindowIndex;
 	@Shadow
+	@Final
 	private Rect2i area;
 
 	@Unique
-	private Formatting ctp_cacheColor;
+	private Integer cacheColor;
 
 	@Inject(at = @At("TAIL"), method = "render(Lnet/minecraft/client/util/math/MatrixStack;II)V", locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-	private void commandTips_renderItems(MatrixStack matrices, int mouseX, int mouseY, CallbackInfo ci, int suggestionListSize) {
-		final List<Suggestion> suggestionList = this.suggestions.getList();
-
+	private void renderSuggestions(MatrixStack matrices, int mouseX, int mouseY, CallbackInfo ci, int suggestionListSize) {
 		for(int entry = 0; entry < suggestionListSize; entry++) {
-			final Suggestion suggestion = suggestionList.get(entry + this.inWindowIndex);
+			final Suggestion suggestion = this.field_25709.get(entry + this.inWindowIndex);
 
+			if (suggestion instanceof SuggestionWithData) {
+				final SuggestionData<?> data = ((SuggestionWithData) suggestion).getData();
+				//noinspection rawtypes - Generics are pain
+				final SuggestionRenderer renderer = SuggestionRendererRegistry.getRenderer(data.getType());
+
+				if (renderer != null) {
+					//noinspection unchecked - Generics are pain
+					renderer.render(suggestion, data, matrices, entry, this.area.getX() - 16, this.area.getY() + (12 * entry) - 1, mouseX, mouseY);
+				}
+			}
+
+			/* TODO: Remove old code
 			if (suggestion instanceof ItemRenderableSuggestion) {
 				final ItemStack stack = new ItemStack(((ItemRenderableSuggestion) suggestion).getItem());
 				final BakedModel model = MinecraftClient.getInstance().getItemRenderer().getHeldItemModel(stack, null, MinecraftClient.getInstance().player);
@@ -90,27 +97,27 @@ public abstract class CommandSuggestor_SuggestionWindowMixin_Core {
 						DrawableHelper.drawTexture(matrices, this.area.getX() - 16, this.area.getY() + (12 * entry) + 2, 40.0F, 8.0F, 8, 8, 64, 64);
 					}
 				}
-			}
+			}*/
 		}
 	}
 
-	// Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I
 	@Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/suggestion/Suggestion;getText()Ljava/lang/String;"), method = "render")
-	private String ctp_cacheTextColor(Suggestion suggestion) {
-		if (suggestion instanceof ColoredSuggestion) {
-			this.ctp_cacheColor = ((ColoredSuggestion) suggestion).getFormatting();
+	private String cacheTextColor(Suggestion suggestion) {
+		if (suggestion instanceof SuggestionWithData) {
+			final ColorSuggestionData suggestionData = SuggestionData.get(SuggestionTypes.COLOR, suggestion);
+
+			this.cacheColor = suggestionData.getColor().getRgb();
 		} else {
-			this.ctp_cacheColor = null;
+			this.cacheColor = null;
 		}
 
 		return suggestion.getText();
 	}
 
-	// Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Ljava/lang/String;FFI)I
 	@ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Lnet/minecraft/client/util/math/MatrixStack;Ljava/lang/String;FFI)I"), method = "render", index = 4)
-	private int ctp_setTextColor(int color) {
-		if (this.ctp_cacheColor != null && color == -5592406) {
-			return this.ctp_cacheColor.getColorValue();
+	private int modifyTextColor(int color) {
+		if (this.cacheColor != null && color == -5592406) {
+			return this.cacheColor;
 		}
 
 		return color;

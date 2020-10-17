@@ -8,8 +8,8 @@
   "authors": [
     {
       "name": "i509VCB",
-      "minecraft": "765e5d33-c991-454f-8775-b6a7a394c097",
       "contact": {
+        "minecraft": "765e5d33-c991-454f-8775-b6a7a394c097",
         "sources": "https://github.com/i509VCB/",
         "discord": "i509VCB#9778"
       }
@@ -26,19 +26,15 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "me.i509.fabric.commandtips.CommandTipsClient"
+      "me.i509.fabric.commandtips.internal.CommandTipsClientMod"
     ]
   },
   "mixins": [
-    "mixins.commandtips.accessors.json",
     "mixins.commandtips.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.7.2",
     "fabric": "*"
-  },
-  "suggests": {
-    "flamingo": "*"
   }
 }

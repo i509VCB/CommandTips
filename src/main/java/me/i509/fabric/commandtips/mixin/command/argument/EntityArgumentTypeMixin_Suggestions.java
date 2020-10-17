@@ -4,22 +4,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import com.mojang.brigadier.arguments.ArgumentType;
+
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.i509.fabric.commandtips.CommandTipsClient;
-import me.i509.fabric.commandtips.suggestion.ColoredSuggestion;
-import me.i509.fabric.commandtips.suggestion.PlayerEntrySuggestion;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.arguments.EntityArgumentType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.server.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
+import me.i509.fabric.commandtips.api.suggestion.ColorSuggestionData;
+import me.i509.fabric.commandtips.api.suggestion.PlayerSuggestionData;
+import me.i509.fabric.commandtips.internal.CachedEntityTracker;
+import me.i509.fabric.commandtips.internal.CommandTipsClientMod;
+import me.i509.fabric.commandtips.internal.SuggestionWithData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,41 +22,51 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.EntityType;
+import net.minecraft.server.command.ServerCommandSource;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+@Environment(EnvType.CLIENT)
 @Mixin(EntityArgumentType.class)
-public abstract class EntityArgumentTypeMixin_Suggestions {
+abstract class EntityArgumentTypeMixin_Suggestions {
 	@Shadow @Final private boolean playersOnly;
 
-	@Inject(at = @At(value = "RETURN"), method = "listSuggestions")
-	private void commandTips_addCachedSuggestion(CommandContext<CommandSource> context, SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
+	@Inject(at = @At(value = "RETURN", ordinal = 0), method = "listSuggestions")
+	private void createRichEntitySuggestions(CommandContext<CommandSource> context, SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
+		// Do not add additional suggestions to server
 		if (context.getSource() instanceof ServerCommandSource) {
 			return;
 		}
 
-		cir.getReturnValue().thenApply(suggestions ->  {
-			final CommandTipsClient client = CommandTipsClient.getInstance();
+		cir.getReturnValue().thenApply(suggestions -> {
+			final CachedEntityTracker tracker = CommandTipsClientMod.getEntityTracker();
 			final StringRange range = suggestions.getRange();
 			final List<Suggestion> oldSuggestionList = suggestions.getList();
 			final List<Suggestion> suggestionList = new ArrayList<>();
 
-			ColoredSuggestion colorSuggestion = null;
-
 			// TODO: Check if a UUID can actually be displayed with the current suggestions or not, if not then don't add it.
 			// TODO: Add a tooltip so we can display the entity type being stored.
-			if (client.getCachedEntityType().isPresent() && client.getCachedEntityUUID().isPresent()) {
-				if (!this.playersOnly || client.getCachedEntityType().get().equals(EntityType.PLAYER)) {
-					colorSuggestion = new ColoredSuggestion(range, client.getCachedEntityUUID().get().toString(), client.getConfig().cachedEntitySelectorColor);
-					suggestionList.add(colorSuggestion);
+			// FIXME: Does not work
+			if (tracker.getType() != null) {
+				if (!this.playersOnly || tracker.getType().equals(EntityType.PLAYER)) {
+					suggestionList.add(new SuggestionWithData(range, tracker.getUuid().toString(), new ColorSuggestionData(CommandTipsClientMod.getConfig().getCachedEntitySuggestionColor())));
 				}
 			}
 
 			// Now display the face of the player next to each player on the list known to the client
-
 			for (final Suggestion suggestion : oldSuggestionList) {
 				final Collection<PlayerListEntry> players = MinecraftClient.getInstance().getNetworkHandler().getPlayerList();
 
-				for (final PlayerListEntry player : players) {
-					if (player.getProfile().getName().equals(suggestion.getText())) {
-						suggestionList.add(new PlayerEntrySuggestion(range, suggestion.getText(), player, player.getProfile(), player.getSkinTexture()));
+				// FIXME: Brittle check to use username?
+				for (final PlayerListEntry entry : players) {
+					if (entry.getProfile().getName().equals(suggestion.getText())) {
+						suggestionList.add(new SuggestionWithData(range, suggestion.getText(), new PlayerSuggestionData(entry)));
 						break;
 					}
 
