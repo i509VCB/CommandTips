@@ -9,7 +9,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.i509.fabric.commandtips.api.suggestion.BlockSuggestionData;
+import me.i509.fabric.commandtips.api.suggestion.ItemSuggestionData;
 import me.i509.fabric.commandtips.internal.SuggestionWithData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,13 +39,15 @@ abstract class BlockArgumentParserMixin implements ArgumentType<BlockStateArgume
 
 				if (block.isPresent() && block.get().asItem() != null) {
 					if (suggestion.getTooltip() != null) {
-						modifiedSuggestions.add(new SuggestionWithData(suggestion.getRange(), suggestion.getText(), suggestion.getTooltip(), new BlockSuggestionData(block.get())));
+						modifiedSuggestions.add(new SuggestionWithData(suggestion.getRange(), suggestion.getText(), suggestion.getTooltip(), new ItemSuggestionData(block.get().asItem())));
 					} else {
-						modifiedSuggestions.add(new SuggestionWithData(suggestion.getRange(), suggestion.getText(), new BlockSuggestionData(block.get())));
+						modifiedSuggestions.add(new SuggestionWithData(suggestion.getRange(), suggestion.getText(), new ItemSuggestionData(block.get().asItem())));
 					}
+				} else {
+					// TODO Ideas how to handle this case further?
+					//  Just render the block?
+					modifiedSuggestions.add(suggestion);
 				}
-
-				modifiedSuggestions.add(suggestion);
 			}
 
 			return new Suggestions(suggestions.getRange(), modifiedSuggestions);

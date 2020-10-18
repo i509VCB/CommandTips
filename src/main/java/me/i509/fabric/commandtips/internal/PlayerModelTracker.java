@@ -17,11 +17,11 @@ public final class PlayerModelTracker {
 	PlayerModelTracker() {
 	}
 
-	boolean isTracked(UUID uuid) {
+	public boolean isTracked(UUID uuid) {
 		return this.trackedPlayers.containsKey(uuid);
 	}
 
-	boolean isHatVisible(UUID uuid) {
+	public boolean isHatVisible(UUID uuid) {
 		return this.trackedPlayers.get(uuid);
 	}
 
