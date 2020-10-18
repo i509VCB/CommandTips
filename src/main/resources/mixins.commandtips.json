@@ -2,13 +2,12 @@
   "required": true,
   "package": "me.i509.fabric.commandtips.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [
-  ],
   "client": [
-    "command.argument.BlockArgumentParserMixin_Suggestions",
-    "command.argument.EntityArgumentTypeMixin_Suggestions",
-    "command.argument.ItemStackArgumentTypeMixin_Suggestions",
-    "screen.CommandSuggestor_SuggestionWindowMixin_Core"
+    "ClientPlayNetworkHandlerMixin",
+    "CommandSuggestorSuggestionWindowMixin",
+    "suggestion.BlockArgumentParserMixin",
+    "suggestion.EntityArgumentTypeMixin",
+    "suggestion.ItemStackArgumentTypeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,4 +1,4 @@
-package me.i509.fabric.commandtips.mixin.command.argument;
+package me.i509.fabric.commandtips.mixin.suggestion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +28,10 @@ import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 @Mixin(BlockArgumentParser.class)
-abstract class BlockArgumentParserMixin_Suggestions implements ArgumentType<BlockStateArgument> {
+abstract class BlockArgumentParserMixin implements ArgumentType<BlockStateArgument> {
 	@Inject(at = @At("TAIL"), method = "getSuggestions", cancellable = true)
 	private void createRichBlockSuggestions(SuggestionsBuilder builder, TagGroup<Block> group, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
-		cir.getReturnValue().thenApply(suggestions -> {
+		cir.setReturnValue(cir.getReturnValue().thenApply(suggestions -> {
 			final List<Suggestion> modifiedSuggestions = new ArrayList<>();
 
 			for (final Suggestion suggestion : suggestions.getList()) {
@@ -49,6 +49,6 @@ abstract class BlockArgumentParserMixin_Suggestions implements ArgumentType<Bloc
 			}
 
 			return new Suggestions(suggestions.getRange(), modifiedSuggestions);
-		});
+		}));
 	}
 }

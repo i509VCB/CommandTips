@@ -1,4 +1,4 @@
-package me.i509.fabric.commandtips.mixin.command.argument;
+package me.i509.fabric.commandtips.mixin.suggestion;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,17 +34,17 @@ import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 @Mixin(EntityArgumentType.class)
-abstract class EntityArgumentTypeMixin_Suggestions {
+abstract class EntityArgumentTypeMixin {
 	@Shadow @Final private boolean playersOnly;
 
-	@Inject(at = @At(value = "RETURN", ordinal = 0), method = "listSuggestions")
+	@Inject(at = @At(value = "RETURN", ordinal = 0), method = "listSuggestions", cancellable = true)
 	private void createRichEntitySuggestions(CommandContext<CommandSource> context, SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
 		// Do not add additional suggestions to server
 		if (context.getSource() instanceof ServerCommandSource) {
 			return;
 		}
 
-		cir.getReturnValue().thenApply(suggestions -> {
+		cir.setReturnValue(cir.getReturnValue().thenApply(suggestions -> {
 			final CachedEntityTracker tracker = CommandTipsClientMod.getEntityTracker();
 			final StringRange range = suggestions.getRange();
 			final List<Suggestion> oldSuggestionList = suggestions.getList();
@@ -75,6 +75,6 @@ abstract class EntityArgumentTypeMixin_Suggestions {
 			}
 
 			return new Suggestions(range, suggestionList);
-		});
+		}));
 	}
 }

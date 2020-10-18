@@ -16,12 +16,12 @@ public final class CachedEntityTracker {
 	CachedEntityTracker() {
 	}
 
-	void startTracking(UUID uuid, EntityType<?> type) {
+	void startTrackingCursorEntity(UUID uuid, EntityType<?> type) {
 		this.uuid = uuid;
 		this.type = type;
 	}
 
-	void stopTracking(Entity entity) {
+	void stopTrackingCursorEntity(Entity entity) {
 		if (entity.getUuid().equals(this.uuid)) {
 			this.uuid = null;
 			this.type = null;

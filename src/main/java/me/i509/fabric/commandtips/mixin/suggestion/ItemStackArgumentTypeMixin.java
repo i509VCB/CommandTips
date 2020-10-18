@@ -1,4 +1,4 @@
-package me.i509.fabric.commandtips.mixin.command.argument;
+package me.i509.fabric.commandtips.mixin.suggestion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 @Mixin(ItemStackArgumentType.class)
-abstract class ItemStackArgumentTypeMixin_Suggestions {
+abstract class ItemStackArgumentTypeMixin {
 	@Inject(at = @At("TAIL"), method = "listSuggestions", cancellable = true)
 	private void createRichItemSuggestions(CommandContext<CommandSource> ctx, SuggestionsBuilder builder, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir) {
 		// Do not add additional suggestions to server
@@ -36,7 +36,7 @@ abstract class ItemStackArgumentTypeMixin_Suggestions {
 			return;
 		}
 
-		cir.getReturnValue().thenApply(suggestions -> {
+		cir.setReturnValue(cir.getReturnValue().thenApply(suggestions -> {
 			List<Suggestion> modifiedSuggestions = new ArrayList<>();
 
 			for (Suggestion suggestion : suggestions.getList()) {
@@ -56,6 +56,6 @@ abstract class ItemStackArgumentTypeMixin_Suggestions {
 			}
 
 			return new Suggestions(suggestions.getRange(), modifiedSuggestions);
-		});
+		}));
 	}
 }
