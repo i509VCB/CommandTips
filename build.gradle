@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.4.3'
+	id 'fabric-loom' version '0.5-SNAPSHOT'
 	id 'maven-publish'
 	id 'net.minecrell.licenser' version '0.4.1'
 }
@@ -15,9 +15,6 @@ license {
 	header = file('HEADER.txt')
 	include '**/*.java'
 	style.java = 'BLOCK_COMMENT'
-}
-
-minecraft {
 }
 
 dependencies {
